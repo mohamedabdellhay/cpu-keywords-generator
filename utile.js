@@ -60,8 +60,10 @@ export function generateArabicNumberDuplicates(keywords) {
 }
 
 export function generateCpuKeywords(cpuName) {
+  // تنظيف الاسم من الرموز
   cpuName = cpuName.replace(/®|™/g, "").replace(/\s+/g, " ").trim();
 
+  // خريطة اللواحق العربية الشائعة
   const suffixMap = {
     U: "يو",
     F: "اف",
@@ -137,8 +139,8 @@ function parseCpuInfo(cpuName) {
   // رقم الموديل
   let modelMatch;
   if (info.brand === "qualcomm") {
-    // Snapdragon: "8 Gen 3" أو "7+ Gen 2" أو "888" أو "870"
-    modelMatch = cpuName.match(/(\d+\+?\s*gen\s*\d+|\d{3,4}[a-z]*)/i);
+    // Snapdragon: "8 Gen 3" أو "7+ Gen 2" أو "7s Gen 3" أو "888" أو "870"
+    modelMatch = cpuName.match(/(\d+[a-z]*[+]?\s*gen\s*\d+|\d{3,4}[a-z]*)/i);
   } else if (info.brand === "mediatek") {
     // MediaTek: "9200" أو "G99" أو "P90"
     modelMatch = cpuName.match(/([a-z]\d{2,4}|\d{3,4})/i);
@@ -148,9 +150,18 @@ function parseCpuInfo(cpuName) {
   }
   info.model = modelMatch ? modelMatch[1] : "";
 
-  // الجيل (أول رقم من الموديل - فقط Intel/AMD)
+  // الجيل (فقط Intel/AMD)
   if (info.brand === "intel" || info.brand === "amd") {
-    info.generation = info.model ? info.model[0] : "";
+    if (info.brand === "intel" && info.model.length >= 4) {
+      // Intel: أول رقمين من الموديل (1335 = جيل 13، 12450 = جيل 12)
+      info.generation =
+        Number(info.model.substring(0, 2)) > 20
+          ? info.model.substring(0, 1)
+          : info.model.substring(0, 2);
+    } else if (info.brand === "amd" && info.model.length >= 4) {
+      // AMD: أول رقم من الموديل (5500 = جيل 5، 7730 = جيل 7)
+      info.generation = info.model[0];
+    }
   }
 
   // اللاحقة
@@ -261,78 +272,121 @@ function addCommonSearchPatterns(keywords, info, suffixMap) {
 
   // Qualcomm Snapdragon patterns
   if (brand === "qualcomm") {
-    // snapdragon 8 gen 3
-    keywords.add(`snapdragon ${model}`.toLowerCase());
-    keywords.add(`${series} ${model}`.toLowerCase());
+    const modelClean = model.replace(/\s+/g, " "); // حفظ المسافات الطبيعية
+
+    // snapdragon 8 gen 3 أو snapdragon 7+ gen 2
+    keywords.add(`snapdragon ${modelClean}`.toLowerCase());
+    keywords.add(`${series} ${modelClean}`.toLowerCase());
 
     // كوالكوم سناب دراجون
-    keywords.add(`كوالكوم ${model}`.toLowerCase());
-    keywords.add(`كوالكوم سناب دراجون ${model}`.toLowerCase());
-    keywords.add(`سناب دراجون ${model}`.toLowerCase());
-    keywords.add(`سنابدراجون ${model}`.toLowerCase());
+    keywords.add(`كوالكوم ${modelClean}`.toLowerCase());
+    keywords.add(`كوالكوم سناب دراجون ${modelClean}`.toLowerCase());
+    keywords.add(`سناب دراجون ${modelClean}`.toLowerCase());
+    keywords.add(`سنابدراجون ${modelClean}`.toLowerCase());
 
     // معالج snapdragon
-    keywords.add(`معالج snapdragon ${model}`.toLowerCase());
-    keywords.add(`معالج سناب دراجون ${model}`.toLowerCase());
-    keywords.add(`معالج كوالكوم ${model}`.toLowerCase());
+    keywords.add(`معالج snapdragon ${modelClean}`.toLowerCase());
+    keywords.add(`معالج سناب دراجون ${modelClean}`.toLowerCase());
+    keywords.add(`معالج كوالكوم ${modelClean}`.toLowerCase());
 
     // qualcomm snapdragon
-    keywords.add(`qualcomm snapdragon ${model}`.toLowerCase());
-    keywords.add(`qualcomm ${model}`.toLowerCase());
+    keywords.add(`qualcomm snapdragon ${modelClean}`.toLowerCase());
+    keywords.add(`qualcomm ${modelClean}`.toLowerCase());
 
     // بروسيسور snapdragon
-    keywords.add(`بروسيسور snapdragon ${model}`.toLowerCase());
-    keywords.add(`بروسيسور كوالكوم ${model}`.toLowerCase());
+    keywords.add(`بروسيسور snapdragon ${modelClean}`.toLowerCase());
+    keywords.add(`بروسيسور كوالكوم ${modelClean}`.toLowerCase());
 
-    // اختصارات شائعة (SD 8 Gen 3)
-    const shortModel = model.replace(/\s+/g, "");
-    keywords.add(`sd ${shortModel}`.toLowerCase());
+    // اختصارات شائعة (SD 8 Gen 3 أو SD 7+ Gen 2)
+    const shortModel = modelClean.replace(/\s+/g, "");
+    keywords.add(`sd ${modelClean}`.toLowerCase());
     keywords.add(`sd${shortModel}`.toLowerCase());
+    keywords.add(`sd ${shortModel}`.toLowerCase());
 
-    // إصدارات Gen بدون مسافات
-    if (model.includes("gen")) {
-      keywords.add(model.replace(/\s+/g, "").toLowerCase());
-      keywords.add(`snapdragon${model.replace(/\s+/g, "")}`.toLowerCase());
+    // إصدارات Gen بدون مسافات (8gen3, 7+gen2)
+    if (modelClean.includes("gen")) {
+      keywords.add(shortModel.toLowerCase());
+      keywords.add(`snapdragon${shortModel}`.toLowerCase());
+      keywords.add(`snapdragon ${shortModel}`.toLowerCase());
+
+      // مع مسافة قبل gen (8 gen3, 7+ gen2)
+      const genVariant = modelClean.replace(/\s*gen\s*/i, "gen");
+      keywords.add(genVariant.toLowerCase());
+      keywords.add(`snapdragon ${genVariant}`.toLowerCase());
+    }
+
+    // نسخ بدون + للبحث الأسهل (7 gen 2)
+    if (modelClean.includes("+")) {
+      const noPlusModel = modelClean.replace(/\+/g, "");
+      keywords.add(`snapdragon ${noPlusModel}`.toLowerCase());
+      keywords.add(`sd ${noPlusModel}`.toLowerCase());
+      keywords.add(`معالج snapdragon ${noPlusModel}`.toLowerCase());
     }
   }
 
   // MediaTek patterns
   if (brand === "mediatek") {
     const chipset = series; // dimensity أو helio
+    const modelUpper = model.toUpperCase(); // للأحرف مثل G99
+    const modelLower = model.toLowerCase();
 
-    // dimensity 9200
-    keywords.add(`${chipset} ${model}`.toLowerCase());
-    keywords.add(`mediatek ${chipset} ${model}`.toLowerCase());
+    // dimensity 9200 أو helio g99
+    keywords.add(`${chipset} ${modelLower}`.toLowerCase());
+    keywords.add(`${chipset} ${modelUpper}`.toLowerCase());
+    keywords.add(`mediatek ${chipset} ${modelLower}`.toLowerCase());
+    keywords.add(`mediatek ${chipset} ${modelUpper}`.toLowerCase());
 
     // ميدياتك ديمنسيتي
     if (chipset === "dimensity") {
-      keywords.add(`ديمنسيتي ${model}`.toLowerCase());
-      keywords.add(`ميدياتك ديمنسيتي ${model}`.toLowerCase());
-      keywords.add(`mediatek dimensity ${model}`.toLowerCase());
-      keywords.add(`معالج ديمنسيتي ${model}`.toLowerCase());
-      keywords.add(`معالج dimensity ${model}`.toLowerCase());
+      keywords.add(`ديمنسيتي ${modelLower}`.toLowerCase());
+      keywords.add(`ديمنسيتي ${modelUpper}`.toLowerCase());
+      keywords.add(`ميدياتك ديمنسيتي ${modelLower}`.toLowerCase());
+      keywords.add(`ميدياتك ديمنسيتي ${modelUpper}`.toLowerCase());
+      keywords.add(`mediatek dimensity ${modelLower}`.toLowerCase());
+      keywords.add(`mediatek dimensity ${modelUpper}`.toLowerCase());
+      keywords.add(`معالج ديمنسيتي ${modelLower}`.toLowerCase());
+      keywords.add(`معالج ديمنسيتي ${modelUpper}`.toLowerCase());
+      keywords.add(`معالج dimensity ${modelLower}`.toLowerCase());
+      keywords.add(`معالج dimensity ${modelUpper}`.toLowerCase());
 
-      // اختصار شائع
-      keywords.add(`d${model}`.toLowerCase());
+      // اختصار شائع (d9200)
+      keywords.add(`d${modelLower}`.toLowerCase());
+      keywords.add(`d ${modelLower}`.toLowerCase());
     }
 
     // ميدياتك هيليو
     if (chipset === "helio") {
-      keywords.add(`هيليو ${model}`.toLowerCase());
-      keywords.add(`ميدياتك هيليو ${model}`.toLowerCase());
-      keywords.add(`mediatek helio ${model}`.toLowerCase());
-      keywords.add(`معالج هيليو ${model}`.toLowerCase());
-      keywords.add(`معالج helio ${model}`.toLowerCase());
+      keywords.add(`هيليو ${modelLower}`.toLowerCase());
+      keywords.add(`هيليو ${modelUpper}`.toLowerCase());
+      keywords.add(`ميدياتك هيليو ${modelLower}`.toLowerCase());
+      keywords.add(`ميدياتك هيليو ${modelUpper}`.toLowerCase());
+      keywords.add(`mediatek helio ${modelLower}`.toLowerCase());
+      keywords.add(`mediatek helio ${modelUpper}`.toLowerCase());
+      keywords.add(`معالج هيليو ${modelLower}`.toLowerCase());
+      keywords.add(`معالج هيليو ${modelUpper}`.toLowerCase());
+      keywords.add(`معالج helio ${modelLower}`.toLowerCase());
+      keywords.add(`معالج helio ${modelUpper}`.toLowerCase());
+
+      // helio gaming (G99, G96)
+      if (/^g/i.test(model)) {
+        keywords.add(`helio gaming ${modelLower}`.toLowerCase());
+        keywords.add(`هيليو جيمنج ${modelLower}`.toLowerCase());
+      }
     }
 
     // معالج mediatek
-    keywords.add(`معالج mediatek ${model}`.toLowerCase());
-    keywords.add(`معالج ميدياتك ${model}`.toLowerCase());
-    keywords.add(`بروسيسور mediatek ${model}`.toLowerCase());
+    keywords.add(`معالج mediatek ${modelLower}`.toLowerCase());
+    keywords.add(`معالج mediatek ${modelUpper}`.toLowerCase());
+    keywords.add(`معالج ميدياتك ${modelLower}`.toLowerCase());
+    keywords.add(`معالج ميدياتك ${modelUpper}`.toLowerCase());
+    keywords.add(`بروسيسور mediatek ${modelLower}`.toLowerCase());
+    keywords.add(`بروسيسور mediatek ${modelUpper}`.toLowerCase());
 
     // بدون اسم السلسلة
-    keywords.add(`mediatek ${model}`.toLowerCase());
-    keywords.add(`ميدياتك ${model}`.toLowerCase());
+    keywords.add(`mediatek ${modelLower}`.toLowerCase());
+    keywords.add(`mediatek ${modelUpper}`.toLowerCase());
+    keywords.add(`ميدياتك ${modelLower}`.toLowerCase());
+    keywords.add(`ميدياتك ${modelUpper}`.toLowerCase());
   }
 }
 
@@ -368,9 +422,9 @@ function addCommonTypos(keywords, info) {
     typos.add(kw.replace(/mediatek/g, "media tek"));
 
     // نسيان المسافات
-    if (kw.includes(" ")) {
-      typos.add(kw.replace(/ /g, ""));
-    }
+    // if (kw.includes(" ")) {
+    //   typos.add(kw.replace(/ /g, ""));
+    // }
   });
 
   typos.forEach((t) => keywords.add(t));
@@ -407,69 +461,47 @@ function addNaturalAbbreviations(keywords, info, suffixMap) {
     const shortModel = model.replace(/\s+/g, "");
     keywords.add(`sd${shortModel}`.toLowerCase());
     keywords.add(`sd ${model}`.toLowerCase());
+    keywords.add(`sd ${shortModel}`.toLowerCase());
 
     // 8gen3 فقط
     if (model.includes("gen")) {
       keywords.add(shortModel.toLowerCase());
+      const genOnly = model.replace(/\s*gen\s*/i, "gen");
+      keywords.add(genOnly.toLowerCase());
+    }
+
+    // بدون + (7 gen 2 بدلاً من 7+ gen 2)
+    if (model.includes("+")) {
+      const noPlus = model.replace(/\+/g, "");
+      keywords.add(`sd${noPlus.replace(/\s+/g, "")}`.toLowerCase());
+      keywords.add(`${noPlus}`.toLowerCase());
     }
   }
 
   // MediaTek
   if (brand === "mediatek") {
+    const modelLower = model.toLowerCase();
+
     // mtk 9200 (اختصار MediaTek)
-    keywords.add(`mtk ${model}`.toLowerCase());
-    keywords.add(`mtk${model}`.toLowerCase());
+    keywords.add(`mtk ${modelLower}`.toLowerCase());
+    keywords.add(`mtk${modelLower}`.toLowerCase());
 
     // اختصار dimensity: d9200
     if (series === "dimensity") {
-      keywords.add(`d${model}`.toLowerCase());
-      keywords.add(`d ${model}`.toLowerCase());
+      keywords.add(`d${modelLower}`.toLowerCase());
+      keywords.add(`d ${modelLower}`.toLowerCase());
+    }
+
+    // للنماذج مثل G99، P90
+    if (/^[a-z]/i.test(model)) {
+      const modelUpper = model.toUpperCase();
+      keywords.add(`mtk ${modelUpper}`.toLowerCase());
+      keywords.add(`mtk${modelUpper}`.toLowerCase());
+
+      if (series === "helio") {
+        keywords.add(`helio${modelUpper}`.toLowerCase());
+        keywords.add(`helio${modelLower}`.toLowerCase());
+      }
     }
   }
-}
-
-// ============= اختبار =============
-
-// قائمة معالجات للاختبار
-const testCpus = [
-  // Intel
-  "Intel Core i5-1235U", // Intel جيل 12
-  "Intel Core i7-13700H", // Intel جيل 13
-  "Intel Core i9-14900K", // Intel Gaming/Desktop
-  "Intel Core Ultra 7 155H", // Intel الجيل الجديد
-
-  // AMD
-  "AMD Ryzen 5 5500U", // AMD Ryzen 5000
-  "AMD Ryzen 7 7730U", // AMD Ryzen 7000
-  "AMD Ryzen 9 7940HS", // AMD High Performance
-
-  // Qualcomm Snapdragon
-  "Qualcomm Snapdragon 8 Gen 3", // Snapdragon جيل 8
-  "Snapdragon 888", // Snapdragon 800 series
-  "Qualcomm Snapdragon 7+ Gen 2", // Snapdragon جيل 7+
-
-  // MediaTek
-  "MediaTek Dimensity 9200", // Dimensity Flagship
-  "MediaTek Dimensity 8200", // Dimensity Mid-range
-  "MediaTek Helio G99", // Helio Gaming
-];
-
-console.log("🔍 اختبار المعالجات المختلفة:\n");
-
-testCpus.forEach((cpu) => {
-  const keywords = generateCpuKeywords(cpu);
-  console.log(`\n=== ${cpu} ===`);
-  console.log(`📊 عدد الكلمات: ${keywords.length}`);
-  console.log("🔑 أول 10 كلمات:");
-  console.log(
-    keywords
-      .slice(0, 10)
-      .map((k, i) => `  ${i + 1}. ${k}`)
-      .join("\n")
-  );
-});
-
-// تصدير الدالة
-if (typeof module !== "undefined" && module.exports) {
-  module.exports = generateCpuKeywords;
 }
