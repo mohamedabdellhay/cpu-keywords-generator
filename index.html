@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU Keywords Generator</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" class="js-site-favicon" type="image/svg+xml"
+        href="https://github.githubassets.com/favicons/favicon-dark.svg"
+        data-base-href="https://github.githubassets.com/favicons/favicon">
+
+</head>
+
+<body>
+    <!-- Modal -->
+    <!-- <div class="modal fade" id="welcomeModal" tabindex="-1" aria-labelledby="welcomeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">خلصانه!</button>
+                </div>
+            </div>
+        </div>
+    </div> -->
+
+    <!-- <div id="alert">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Success!</strong> Tags copied to clipboard.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div> -->
+    <div class="container">
+        <div id="alertContainer" class="alert-container"></div>
+        <!-- add new tags -->
+        <div class="add-tag-card">
+            <h4 class="mb-3 text-primary">CPU Tags</h4>
+            <div class="input-group">
+                <input type="text" id="tagInput" class="form-control" dir="auto"
+                    placeholder="Enter CPU keyword or paste collection of keywords here." style="border-radius: 5px;">
+            </div>
+            <!-- </div>
+
+            
+        <div class="tags-card"> -->
+
+            <!-- search form  -->
+
+            <!-- <div style=" margin: 10px 0 20px;">
+                <div class="input-group">
+                    <input type="text" id="searchTagInput" class="form-control" dir="auto"
+                        placeholder="Search for a keyword" style="border-radius: 5px;">
+                </div>
+            </div> -->
+            <!-- end search form -->
+            <div style="min-height: 400px; margin: 10px 0 20px;border: 1px solid rgba(0, 0, 0, 0.1);">
+                <div class="input-group" style="padding: 10px;">
+                    <input type="text" id="searchTagInput" class="form-control" dir="auto"
+                        placeholder="Search for a keyword" style="border-radius: 5px;">
+                </div>
+                <div id="tagsList" class="tags-list">
+                    <!-- category tags will be here-->
+                </div>
+            </div>
+
+
+            <div class="operation" style="display: flex; flex-direction: row; justify-content: space-evenly;">
+                <button id="copyButton" class="btn  btn-primary btn-sm" style="width: 45%;">Copy</button>
+                <button id="clearButton" class="btn btn-danger btn-sm" style="width: 45%;">Clear</button>
+            </div>
+        </div>
+
+
+    </div>
+
+
+    <audio id="notificationSound">
+        <source src="./notification-alert.mp3" type="audio/mpeg">
+    </audio>
+
+
+    <div class="status-box">
+        <h6>Keywords Status:</h6>
+        <ul>
+            <li>Keywords: <span id="keywords-counter">0</span></li>
+            <li>Showing Keywords: <span id="showing-keywords-counter">0</span></li>
+            <!-- <li>Ctrl + V: Paste text</li> -->
+        </ul>
+    </div>
+
+    <div class="shortcuts-box">
+        <h6>Keyboard Shortcuts:</h6>
+        <ul>
+            <li>Ctrl + C: Copy Tags</li>
+            <li>Ctrl + X: Clear Tags</li>
+            <li>Ctrl + Z: Undo Clear Tags</li>
+            <!-- <li>Ctrl + V: Paste text</li> -->
+        </ul>
+    </div>
+
+
+    <script src="./main.js" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
+    <!-- Custom JS to show modal on page load -->
+    <!-- <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if the modal has been shown before
+            var hasShownModal = localStorage.getItem('hasShownModal');
+            if (!hasShownModal) {
+                // Show the modal
+                var welcomeModal = new bootstrap.Modal(document.getElementById('welcomeModal'));
+                welcomeModal.show();
+
+                // Set a flag in local storage to indicate that the modal has been shown
+                localStorage.setItem('hasShownModal', 'true', {
+                    expires: 1 // Set the expiration to 1 day
+                });
+            }
+        });
+    </script> -->
+</body>
+
+</html>
