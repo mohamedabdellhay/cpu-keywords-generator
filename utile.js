@@ -93,8 +93,11 @@ export function generateCpuKeywords(cpuName) {
 
   // 4. اختصارات طبيعية
   addNaturalAbbreviations(keywords, info, suffixMap);
+  const keywordsNew = Array.from(keywords)
+    .filter((keyword) => !Number(keyword))
+    .filter(Boolean);
 
-  return Array.from(keywords).filter(Boolean);
+  return keywordsNew;
 }
 
 // استخراج معلومات المعالج
