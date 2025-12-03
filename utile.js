@@ -93,9 +93,14 @@ export function generateCpuKeywords(cpuName) {
 
   // 4. اختصارات طبيعية
   addNaturalAbbreviations(keywords, info, suffixMap);
-  const keywordsNew = Array.from(keywords)
-    .filter((keyword) => !Number(keyword))
-    .filter(Boolean);
+  const keywordsNew = [
+    ...new Set(
+      Array.from(keywords)
+        .map((kw) => kw.trim())
+        .filter((keyword) => !Number(keyword))
+        .filter(Boolean)
+    ),
+  ];
 
   return keywordsNew;
 }
